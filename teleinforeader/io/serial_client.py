@@ -5,7 +5,7 @@ import threading
 import serial
 from observable import Observable
 
-from src.util.tele_info_helpers import is_valid_tele_info, extract_value_from_entry, get_current_timestamp, flatten_json
+from teleinforeader.util.tele_info_helpers import is_valid_tele_info, extract_value_from_entry, get_current_timestamp, flatten_json
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
 import argparse
 import logging
 
-from src.database.database_client import DataBaseClient
-from src.io.serial_client import SerialLinkClient
-from src.io.socket_server import SocketServer
-from src.util.logger import configure_logger
+from teleinforeader.database.database_client import DataBaseClient
+from teleinforeader.io.serial_client import SerialLinkClient
+from teleinforeader.io.socket_server import SocketServer
+from teleinforeader.util.logger import configure_logger
 
 APPLICATION_NAME = 'TeleInfo Reader'
 APPLICATION_SHORT_NAME = 'teleinforeader'

@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "TeleInfoReader"
+version = "0.1.0"
+description = "Application used to read TeleInfo data frames from serial link connected to Enedis Linky meter equipment."
+authors = ["Julien LE SAUCE <julien.lesauce@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "teleinforeader" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -2,7 +2,7 @@ import logging
 
 import mariadb
 
-from src.model.tele_info_data import TeleInfoFrame
+from teleinforeader.model.tele_info_data import TeleInfoFrame
 
 logger = logging.getLogger(__name__)
 
