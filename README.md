@@ -1,4 +1,179 @@
 # TeleInfoReader
 
-Application used to read TeleInfo data frames from serial link connected to french Enedis Linky meter equipment. The
-application then provides the data using a socket server. The data are also stored on a local database.
+Application used to read the user data transmitted by Linky meter system (TeleInfo) used by French national energy
+provider Enedis. The application then provides the data using a socket server to connected clients and also publish it
+to a local database.
+
+## Hardware Description
+
+### Material
+
+* Raspberry Pi Zero
+  W ([Buy one](https://www.kubii.fr/les-cartes-raspberry-pi/1851-raspberry-pi-zero-w-kubii-3272496006997.html))
+* PiTInfo shield for Linky user
+  interface ([Buy one](https://www.tindie.com/products/Hallard/pitinfo/))
+
+### Raspberry Pi Zero
+
+#### Version
+
+Board version:
+
+```shell
+$ cat /proc/device-tree/model
+Raspberry Pi Zero W Rev 1.1
+```
+
+OS version:
+
+```shell
+$ cat /etc/os-release
+PRETTY_NAME="Raspbian GNU/Linux 10 (buster)"
+```
+
+## Serial Link Configuration
+
+### How to plug the PiTInfo module
+
+The PiTInfo module should be plugged on GPIO pins {1..10} like in below picture:
+
+<img src="https://www.jonathandupre.fr/images/articles/2018/208/08.jpg" alt="image_pitinfo_plugged" style="width:400px;"/>
+
+For information, the full mapping of GPIOs can be found here:
+[model-zerow-rev1](https://pi4j.com/1.2/pins/model-zerow-rev1.html)
+
+Pin 8 and 10, respectively GPIO 15 and 16 corresponds to the UART, which means where we get the serial data from Enedis
+meter.
+
+### Serial Link Configuration
+
+* Disable serial console:
+    - Edit /boot/cmdline.txt
+    - Remove line: `console=serial0,(...)`
+* Disable bluetooth module:
+    - Edit /boot/config.txt
+    - Add line: `dtoverlay=pi3-miniuart-bt`
+* Reboot raspberry.
+
+### How to test serial link
+
+```shell
+$ sudo stty -F /dev/ttyAMA0 1200 sane evenp parenb cs7 -crtscts
+$ sudo chmod 666 /dev/ttyAMA0
+$ sudo cat /dev/ttyAMA0
+```
+
+This should output the data collected from Linky. If nothing returned, then serial link is probably
+not well configured.
+
+## How to create database on Raspberry
+
+### Install MariaDB server locally
+
+```shell
+$ sudo apt update
+$ sudo apt upgrade
+$ sudo apt install mariadb-server
+$ sudo apt install libmariadbclient-dev # For python bindings
+$ sudo apt install libmariadb3 libmariadb-dev # For python3 mariadb connectors
+```
+
+### Create and configure database
+
+#### Creation
+
+Secure and configure mysql:
+
+```shell
+$ sudo mysql_secure_installation # Say yes to all
+$ sudo mysql -u root -p
+```
+
+Create database:
+
+```mariadb
+CREATE DATABASE teleinfodb;
+CREATE USER '<user>'@'<remote-ip-address>' IDENTIFIED BY 'mypassword';
+GRANT ALL PRIVILEGES ON teleinfodb.* TO '<user>'@'<remote-ip-address>';
+FLUSH PRIVILEGES;
+```
+
+#### Configuration
+
+Enable remote access to database:
+
+In file `/etc/mysql/mariadb.conf.d/50-server.cnf`, change line `bind-address = 127.0.0.1` to `bind-address = *`
+
+```shell
+$ sudo service mysql restart
+```
+
+To connect remotely:
+
+```shell
+$ mysql -u <user> -p -h <raspberry-ip-address>
+```
+
+#### Creating the DB schema and table
+
+```mariadb
+create schema teleinfodb;
+use teleinfodb;
+create table teleinfoframes
+(
+    timestamp                    timestamp default current_timestamp() not null on update current_timestamp() comment 'Frame timestamp in format YYYY-MM-DD HH:mm:ss.zzzzzz'
+        primary key,
+    meter_identifier             char(12)                              not null comment 'Identifier of Enedis telemeter',
+    subscription_type            char(4)                               not null comment 'Customer subscription mode',
+    subscription_power_in_a      tinyint unsigned                      not null comment 'Power in amperes',
+    total_base_index_in_wh       int unsigned                          not null comment 'Total base index in W.h',
+    current_pricing_period       char(4)                               not null comment 'Current period if using peak/off-peak pricing',
+    instantaneous_intensity_in_a smallint unsigned                     not null comment 'Current intensity in amperes',
+    intensity_max_in_a           smallint unsigned                     not null comment 'Maximum intensity in amperes',
+    power_consumption_in_va      mediumint unsigned                    not null comment 'Power consumption in V.A',
+    peak_off_peak_schedule       char                                  not null comment 'Peak/Off-peak time schedule',
+    meter_state_code             char(6)                               null comment 'Error code returned by telemeter'
+)
+    comment 'Table containing the teleinfo frames' collate = utf8mb4_general_ci;
+```
+
+#### Get size of database
+
+```mariadb
+SELECT table_schema                                            'teleinfodb',
+       SUM(data_length + index_length)                         'Size in Bytes',
+       ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) 'Size in MiB'
+FROM information_schema.tables
+WHERE table_schema = 'teleinfodb'
+GROUP BY table_schema;
+```
+
+## Project Management
+
+### How to publish project on Pypi
+
+- See [packaging-projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
+- See [publishing-to-testpypi](https://py-pkgs.org/03-how-to-package-a-python#publishing-to-testpypi)
+
+#### Test publish using TestPyPi
+
+Pre-requisites:
+
+* Create an account on TestPypi
+* Create file ~/.pypirc containing the PyPi API token
+
+```shell
+$ python -m pip install --upgrade pip setuptools wheel build
+$ python -m pip install --upgrade twine
+```
+
+Publishing:
+
+```shell
+$ poetry version patch # To increment the version number
+$ poetry build  # To generate distribution packages for the package
+$ python -m twine upload --repository testpypi dist/*
+or
+$ poetry config repositories.test-pypi https://test.pypi.org/legacy/
+$ poetry publish -r test-pypi
+```

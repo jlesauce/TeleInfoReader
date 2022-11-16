@@ -5,8 +5,18 @@ description = "Application used to read TeleInfo data frames from serial link co
 authors = ["Julien LE SAUCE <julien.lesauce@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/jlesauce/TeleInfoReader"
+repository = "https://github.com/jlesauce/TeleInfoReader"
+keywords = ["teleinfo", "enedis", "linky"]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux"
+]
 packages = [
     { include = "teleinforeader" },
+]
+include = [
+    "LICENSE",
 ]
 
 [tool.poetry.dependencies]
