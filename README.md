@@ -183,8 +183,6 @@ Publishing:
 ```shell
 $ poetry version patch # To increment the version number
 $ poetry build  # To generate distribution packages for the package
-$ python -m twine upload --repository testpypi dist/*
-or
 $ poetry config repositories.test-pypi https://test.pypi.org/legacy/
 $ poetry publish --build -r test-pypi --username __token__ --password <api-token>
 ```
