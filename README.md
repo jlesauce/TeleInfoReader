@@ -1,8 +1,10 @@
-# TeleInfoReader
+# TeleInfo Reader
 
-Application used to read the user data transmitted by Linky meter system (TeleInfo) used by French national energy
-provider Enedis. The application then provides the data using a socket server to connected clients and also publish it
-to a local database.
+Application used to read the user data transmitted by Linky meter system (TeleInfo) from Enedis. The application then
+provides the data using a socket server to connected clients and also publish it to a local database. The application
+runs on a Raspberry Pi Zero and is used only to collect the user data from the meter equipment, the monitoring is done
+with another application which connects to the Raspberry Pi and plot all the gathered information (see TeleInfoMonitor
+application).
 
 ## Hardware Description
 
@@ -15,16 +17,14 @@ to a local database.
 
 ### Raspberry Pi Zero
 
-#### Version
-
-Board version:
+#### Board version:
 
 ```shell
 $ cat /proc/device-tree/model
 Raspberry Pi Zero W Rev 1.1
 ```
 
-OS version:
+#### OS version:
 
 ```shell
 $ cat /etc/os-release
@@ -32,6 +32,10 @@ PRETTY_NAME="Raspbian GNU/Linux 10 (buster)"
 ```
 
 ## Serial Link Configuration
+
+The acquisition of the user data frame (TeleInfo) is done using the serial link provided by Enedis meter equipment. On
+the Raspberry Pi, the reception of the serial data is done using a hardware module called PiTInfo, which is connected on
+the GPIOs of the Raspberry Pi board.
 
 ### How to plug the PiTInfo module
 
@@ -42,18 +46,18 @@ The PiTInfo module should be plugged on GPIO pins {1..10} like in below picture:
 For information, the full mapping of GPIOs can be found here:
 [model-zerow-rev1](https://pi4j.com/1.2/pins/model-zerow-rev1.html)
 
-Pin 8 and 10, respectively GPIO 15 and 16 corresponds to the UART, which means where we get the serial data from Enedis
+Pin 8 and 10, respectively GPIO 15 and 16 corresponds to the UART, which means where we get the serial data from Linky
 meter.
 
 ### Serial Link Configuration
 
-* Disable serial console:
+* Disable serial console (in order to use the serial link device for Linky reception):
     - Edit /boot/cmdline.txt
     - Remove line: `console=serial0,(...)`
-* Disable bluetooth module:
+* Disable bluetooth module(so it doesn't use UART):
     - Edit /boot/config.txt
     - Add line: `dtoverlay=pi3-miniuart-bt`
-* Reboot raspberry.
+* Reboot raspberry
 
 ### How to test serial link
 
@@ -63,10 +67,12 @@ $ sudo chmod 666 /dev/ttyAMA0
 $ sudo cat /dev/ttyAMA0
 ```
 
-This should output the data collected from Linky. If nothing returned, then serial link is probably
-not well configured.
+This should output the data collected from Linky. If nothing returned, then serial link is probably not well configured.
 
 ## How to create database on Raspberry
+
+The application collects the TeleInfo frames and stores them into a local database called `teleinfodb`. This database
+should be created and configured manually on the Raspberry Pi.
 
 ### Install MariaDB server locally
 
@@ -89,20 +95,25 @@ $ sudo mysql_secure_installation # Say yes to all
 $ sudo mysql -u root -p
 ```
 
-Create database:
+Create database (replace `<user>`, `<password>` and `<remote-ip-address>` by your own):
+
+<i>NB: <remote-ip-address> is the IP address of the remote client from where it'll try to connect to the Raspberry
+Pi.</i>
 
 ```mariadb
 CREATE DATABASE teleinfodb;
-CREATE USER '<user>'@'<remote-ip-address>' IDENTIFIED BY 'mypassword';
+CREATE USER '<user>'@'<remote-ip-address>' IDENTIFIED BY '<password>';
 GRANT ALL PRIVILEGES ON teleinfodb.* TO '<user>'@'<remote-ip-address>';
 FLUSH PRIVILEGES;
 ```
 
 #### Configuration
 
-Enable remote access to database:
+Enable remote access to database (in order for a third party tool to connect to the database on the Raspberry Pi):
 
 In file `/etc/mysql/mariadb.conf.d/50-server.cnf`, change line `bind-address = 127.0.0.1` to `bind-address = *`
+
+Restart mysql:
 
 ```shell
 $ sudo service mysql restart
@@ -155,7 +166,7 @@ GROUP BY table_schema;
 - See [packaging-projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
 - See [publishing-to-testpypi](https://py-pkgs.org/03-how-to-package-a-python#publishing-to-testpypi)
 
-#### Test publish using TestPyPi
+#### Test publish using TestPyPi (from host):
 
 Pre-requisites:
 
@@ -175,5 +186,5 @@ $ poetry build  # To generate distribution packages for the package
 $ python -m twine upload --repository testpypi dist/*
 or
 $ poetry config repositories.test-pypi https://test.pypi.org/legacy/
-$ poetry publish -r test-pypi
+$ poetry publish --build -r test-pypi --username __token__ --password <api-token>
 ```
