@@ -19,6 +19,7 @@ class TeleInfoFrame:
             self.meter_state_code = ''
         else:
             self._update_data(tele_info_frame_json)
+        self._validate_data_types()
 
     def _update_data(self, tele_info_frame_json: str):
         json_data = json.loads(tele_info_frame_json)
@@ -37,6 +38,23 @@ class TeleInfoFrame:
         self.power_consumption_in_va = int(tele_info_data_dict['PAPP'])
         self.peak_off_peak_schedule = tele_info_data_dict['HHPHC']
         self.meter_state_code = tele_info_data_dict['MOTDETAT']
+
+    def _validate_data_types(self):
+        try:
+            assert isinstance(self.timestamp, str), "timestamp expects str type"
+            assert isinstance(self.timestamp_db, str), "timestamp_db expects str type"
+            assert isinstance(self.meter_identifier, str), "meter_identifier expects str type"
+            assert isinstance(self.subscription_type, str), "subscription_type expects str type"
+            assert isinstance(self.subscription_power_in_a, int), "subscription_power_in_a expects int type"
+            assert isinstance(self.total_base_index_in_wh, int), "total_base_index_in_wh expects int type"
+            assert isinstance(self.current_pricing_period, str), "current_pricing_period expects str type"
+            assert isinstance(self.instantaneous_intensity_in_a, int), "instantaneous_intensity_in_a expects int type"
+            assert isinstance(self.intensity_max_in_a, int), "intensity_max_in_a expects int type"
+            assert isinstance(self.power_consumption_in_va, int), "power_consumption_in_va expects int type"
+            assert isinstance(self.peak_off_peak_schedule, str), "peak_off_peak_schedule expects str type"
+            assert isinstance(self.meter_state_code, str), "meter_state_code expects str type"
+        except AssertionError as e:
+            raise TypeError(e)
 
     def __str__(self):
         return '{\n' \
