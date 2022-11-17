@@ -28,8 +28,8 @@ def create_correct_json_data() -> dict:
 def test_tele_info_data_with_empty_constructor():
     data = TeleInfoFrame()
 
-    assert data.timestamp == ''
-    assert data.timestamp_db == ''
+    assert data.timestamp == '1970-01-01 00:00:00.000000'
+    assert data.timestamp_db == '1970-01-01 00:00:00'
     assert data.meter_identifier == ''
     assert data.subscription_type == ''
     assert data.subscription_power_in_a == 0

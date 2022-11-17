@@ -5,8 +5,8 @@ class TeleInfoFrame:
 
     def __init__(self, tele_info_frame_json=None):
         if tele_info_frame_json is None:
-            self.timestamp = ''
-            self.timestamp_db = ''
+            self.timestamp = '1970-01-01 00:00:00.000000'
+            self.timestamp_db = '1970-01-01 00:00:00'
             self.meter_identifier = ''
             self.subscription_type = ''
             self.subscription_power_in_a = 0
