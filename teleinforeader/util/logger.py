@@ -1,14 +1,14 @@
 import logging
 import sys
 
-DEFAULT_LOG_LEVEL = logging.DEBUG
+DEFAULT_LOG_LEVEL = logging.INFO
 
 
-def configure_logger(log_file: str):
+def configure_logger(log_file: str, log_level=DEFAULT_LOG_LEVEL):
     formatter = logging.Formatter(
         '%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)s.%(funcName)s]: %(message)s')
     logger = logging.getLogger()
-    configure_application_log_level()
+    configure_application_log_level(log_level)
 
     file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(formatter)
@@ -25,10 +25,10 @@ def configure_logger(log_file: str):
     stderr_handler.setFormatter(formatter)
     logger.addHandler(stderr_handler)
 
-    logger.setLevel(DEFAULT_LOG_LEVEL)
+    logger.setLevel(log_level)
 
 
-def configure_application_log_level():
+def configure_application_log_level(log_level):
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(log_level)
     logging.getLogger('matplotlib').setLevel(logging.ERROR)

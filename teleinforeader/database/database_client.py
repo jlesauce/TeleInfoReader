@@ -2,8 +2,6 @@ import logging
 
 import mariadb
 
-from teleinforeader.model.tele_info_data import TeleInfoFrame
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,18 +29,14 @@ class DataBaseClient:
             logger.error(f'Error connecting to MariaDB Platform: {e}')
             self.connection = None
 
-    def insert_new_tele_info_frame(self, data):
+    def insert_new_tele_info_frame(self, tele_info_frame):
         try:
-            tele_info_frame = TeleInfoFrame(data)
-
             logger.debug(f'Insert new teleinfo frame into database: key={tele_info_frame.timestamp_db}')
             sql_request = self._prepare_insert_frame_request(tele_info_frame)
             cursor = self.connection.cursor()
 
             cursor.execute(sql_request)
             self.connection.commit()
-        except KeyError as e:
-            logger.error(f'Invalid TeleInfo frame received: {e}')
         except mariadb.Error as e:
             logger.error(f'Error executing request to MariaDB Platform: {e}')
 
