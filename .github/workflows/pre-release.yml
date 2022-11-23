@@ -24,7 +24,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libmariadb-dev
+          sudo apt install libmariadbclient-dev libmariadb3 libmariadb-dev
 
       - name: Install Python dependencies
         run: |
