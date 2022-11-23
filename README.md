@@ -187,14 +187,14 @@ $ sudo systemctl disable teleinforeader.service # To disable the service at boot
 
 # Project Management
 
-### How to publish project on Pypi
+## How to publish project on Pypi
 
 - See [packaging-projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
 - See [publishing-to-testpypi](https://py-pkgs.org/03-how-to-package-a-python#publishing-to-testpypi)
 
-#### Test publish using TestPyPi (from host):
+### Test publish using TestPyPi (from host):
 
-Pre-requisites:
+#### Pre-requisites:
 
 * Create an account on TestPypi
 * Create file ~/.pypirc containing the PyPi API token
@@ -204,7 +204,7 @@ $ python -m pip install --upgrade pip setuptools wheel build
 $ python -m pip install --upgrade twine
 ```
 
-Publishing:
+#### Publishing:
 
 ```shell
 $ poetry version patch # To increment the version number
@@ -212,6 +212,25 @@ $ poetry build  # To generate distribution packages for the package
 $ poetry config repositories.test-pypi https://test.pypi.org/legacy/
 $ poetry publish --build -r test-pypi --username __token__ --password <api-token>
 ```
+
+## New version checklist
+
+### Create a pre-release tag
+
+* Update project version:
+
+```shell
+$ poetry version patch
+$ poetry build
+```
+
+* Update Changelog.md file
+* Run tests locally
+* Commit new version with comment `Update version to vX.Y.Z`
+* If CI is passed, create a new pre-release tag `vX.Y.Z_pre-release`
+* Push the new tag -> pre-release workflow should be executed
+* If pre-release passed, then project is available on TestPyPi
+* Update application on Raspberry Pi and test it
 
 <style>
   h2 {margin-left: 10px}

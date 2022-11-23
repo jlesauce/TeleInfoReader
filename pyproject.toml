@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "TeleInfoReader"
-version = "0.1.0"
+version = "0.1.1"
 description = "Application used to read the user data transmitted by Linky meter system (TeleInfo) from Enedis."
 authors = ["Julien LE SAUCE <julien.lesauce@gmail.com>"]
 license = "MIT"
@@ -20,7 +20,7 @@ packages = [
     { include = "teleinforeader" },
 ]
 include = [
-    "LICENSE",
+    "LICENSE", "Changelog.md"
 ]
 
 [tool.poetry.scripts]

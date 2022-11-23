@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-11-23
+
 ### Changed
 
 - Improve test coverage
@@ -23,5 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Versions
 
-- [unreleased](https://github.com/jlesauce/TeleInfoReader/compare/v0.1.0...HEAD)
+- [unreleased](https://github.com/jlesauce/TeleInfoReader/compare/v0.1.1...HEAD)
+- [0.1.1](https://github.com/jlesauce/TeleInfoReader/releases/tag/v0.1.1)
 - [0.1.0](https://github.com/jlesauce/TeleInfoReader/releases/tag/v0.1.0)
