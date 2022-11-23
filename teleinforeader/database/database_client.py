@@ -7,17 +7,17 @@ logger = logging.getLogger(__name__)
 
 class DataBaseClient:
 
-    def __init__(self):
-        self._user = 'jlesauce-local'
-        self._password = '80PYKfEAFoLIBdB'
+    def __init__(self, database_name: str, user: str, password: str, port=3306):
+        self._database_name = database_name
+        self._user = user
+        self._password = password
         self._host = 'localhost'
-        self._port = 3306
-        self._database_name = 'teleinfodb'
-        self.connection = None
+        self._port = port
+        self._connection = None
 
     def connect(self):
         try:
-            self.connection = mariadb.connect(
+            self._connection = mariadb.connect(
                 user=self._user,
                 password=self._password,
                 host=self._host,
@@ -27,24 +27,24 @@ class DataBaseClient:
             self._test_connection()
         except mariadb.Error as e:
             logger.error(f'Error connecting to MariaDB Platform: {e}')
-            self.connection = None
+            self._connection = None
 
     def insert_new_tele_info_frame(self, tele_info_frame):
         try:
             logger.debug(f'Insert new teleinfo frame into database: key={tele_info_frame.timestamp_db}')
             sql_request = self._prepare_insert_frame_request(tele_info_frame)
-            cursor = self.connection.cursor()
+            cursor = self._connection.cursor()
 
             cursor.execute(sql_request)
-            self.connection.commit()
+            self._connection.commit()
         except mariadb.Error as e:
             logger.error(f'Error executing request to MariaDB Platform: {e}')
 
     def is_connected(self):
-        return True if self.connection else False
+        return True if self._connection else False
 
     def _test_connection(self):
-        cursor = self.connection.cursor()
+        cursor = self._connection.cursor()
         cursor.execute('select count(*) row_count from teleinfoframes')
         result = cursor.fetchone()
 

@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 
 from teleinforeader.database.database_client import DataBaseClient
+from teleinforeader.io.TeleInfoError import TeleInfoError
 from teleinforeader.io.serial_client import SerialLinkClient
 from teleinforeader.io.socket_server import SocketServer
 from teleinforeader.model.tele_info_data import TeleInfoFrame
@@ -10,13 +11,17 @@ from teleinforeader.util.logger import configure_logger
 
 APPLICATION_NAME = 'TeleInfo Reader'
 APPLICATION_SHORT_NAME = 'teleinforeader'
+SERIAL_DEVICE_FILE = '/dev/ttyAMA0'
 SOCKET_SERVER_PORT = 50007
+DATABASE_NAME = 'teleinfodb'
+DATABASE_USER_NAME = 'jlesauce-local'
+DATABASE_PASSWORD = '80PYKfEAFoLIBdB'
 TELE_INFO_FRAME_DATA_STORAGE_TIME_INTERVAL_IN_S = 5
 
 logger = logging.getLogger(__name__)
 
 socket_server = SocketServer(port=SOCKET_SERVER_PORT)
-sql_client = DataBaseClient()
+sql_client = DataBaseClient(DATABASE_NAME, DATABASE_USER_NAME, DATABASE_PASSWORD)
 last_received_frame = TeleInfoFrame()
 elapsed_time_since_last_frame_in_s = 0
 
@@ -36,7 +41,7 @@ def main():
 
 
 def create_serial_client():
-    serial_client = SerialLinkClient('/dev/ttyAMA0')
+    serial_client = SerialLinkClient(SERIAL_DEVICE_FILE)
     serial_client.subscribe_to_new_messages(on_new_tele_info_data_received)
     serial_client.start_client()
 
@@ -44,22 +49,25 @@ def create_serial_client():
 def on_new_tele_info_data_received(data: str):
     global last_received_frame, elapsed_time_since_last_frame_in_s
 
-    tele_info_frame = create_tele_info_frame(data)
-    time_diff_between_frames_in_s = compute_time_difference_in_s(last_received_frame, tele_info_frame)
-    elapsed_time_since_last_frame_in_s += time_diff_between_frames_in_s
-    last_received_frame = tele_info_frame
+    try:
+        tele_info_frame = create_tele_info_frame(data)
+        time_diff_between_frames_in_s = compute_time_difference_in_s(last_received_frame, tele_info_frame)
+        elapsed_time_since_last_frame_in_s += time_diff_between_frames_in_s
+        last_received_frame = tele_info_frame
 
-    logger.info(f'Received new TeleInfo frame {tele_info_frame.timestamp}: '
-                f'Iint(A)={tele_info_frame.instantaneous_intensity_in_a}')
-    logger.debug(f'Received serial message:\n{data}')
+        logger.info(f'Received new TeleInfo frame {tele_info_frame.timestamp}: '
+                    f'Iint(A)={tele_info_frame.instantaneous_intensity_in_a}')
+        logger.debug(f'Received serial message:\n{data}')
 
-    if socket_server.is_server_created():
-        socket_server.send_data_to_connected_clients(data)
+        if socket_server.is_server_created():
+            socket_server.send_data_to_connected_clients(data)
 
-    if sql_client.is_connected() and tele_info_frame \
-            and elapsed_time_since_last_frame_in_s >= TELE_INFO_FRAME_DATA_STORAGE_TIME_INTERVAL_IN_S:
-        elapsed_time_since_last_frame_in_s = 0
-        sql_client.insert_new_tele_info_frame(tele_info_frame)
+        if sql_client.is_connected() and tele_info_frame \
+                and elapsed_time_since_last_frame_in_s >= TELE_INFO_FRAME_DATA_STORAGE_TIME_INTERVAL_IN_S:
+            elapsed_time_since_last_frame_in_s = 0
+            sql_client.insert_new_tele_info_frame(tele_info_frame)
+    except TeleInfoError as e:
+        logger.error(f'Invalid TeleInfo frame received: {e}')
 
 
 def compute_time_difference_in_s(data_frame_0, data_frame_1):
@@ -77,8 +85,8 @@ def compute_time_difference_in_s(data_frame_0, data_frame_1):
 def create_tele_info_frame(data):
     try:
         return TeleInfoFrame(data)
-    except KeyError as e:
-        logger.error(f'Invalid TeleInfo frame received: {e}')
+    except Exception as e:
+        raise TeleInfoError(e, data)
 
 
 def parse_arguments():
