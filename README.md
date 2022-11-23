@@ -84,6 +84,14 @@ $ sudo apt install libmariadbclient-dev # For python bindings
 $ sudo apt install libmariadb3 libmariadb-dev # For python3 mariadb connectors
 ```
 
+For Windows, in order to install mariadb python package, it is required to install:
+
+- MariaDB's connectors, which can be
+  found [here](https://mariadb.com/downloads/connectors/connectors-data-access/c-connector/)
+- Microsoft Visual C++ 14.0 or greater:
+    - Download Microsoft Build Tools [here](https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/)
+    - Select custom installation and install "MSVC v143 - VS 2022 C++ x64/x86 build tools (Latest)"
+
 ### Create and configure database
 
 #### Creation
@@ -159,7 +167,25 @@ WHERE table_schema = 'teleinfodb'
 GROUP BY table_schema;
 ```
 
-## Project Management
+## How to create TeleInfoReader daemon service
+
+Here we describe how to configure a Linux service for the application in order to automatically start after the
+Raspberry Pi boot sequence.
+
+- Copy [teleinforeader.service](config/teleinforeader.service) file into `/lib/systemd/system/`
+- Use below commands to enable the service:
+
+```shell
+$ sudo systemctl daemon-reload # To reload available services
+$ sudo systemctl start teleinforeader.service
+$ sudo systemctl status teleinforeader.service # To check if it worked
+$ sudo systemctl enable teleinforeader.service # To enable service at boot
+$ sudo systemctl disable teleinforeader.service # To disable the service at boot
+```
+
+- Program should run automatically at next reboot
+
+# Project Management
 
 ### How to publish project on Pypi
 
@@ -186,3 +212,14 @@ $ poetry build  # To generate distribution packages for the package
 $ poetry config repositories.test-pypi https://test.pypi.org/legacy/
 $ poetry publish --build -r test-pypi --username __token__ --password <api-token>
 ```
+
+<style>
+  h2 {margin-left: 10px}
+  h3 {margin-left: 20px}
+  h4 {margin-left: 30px}
+
+  body {counter-reset: h1}
+  h1 {counter-reset: h2}
+  h1:before {counter-increment: h1; content: counter(h1) ". "}
+  h2:before {counter-increment: h2; content: counter(h1) "." counter(h2) " "}
+</style>

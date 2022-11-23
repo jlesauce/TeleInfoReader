@@ -1,0 +1,19 @@
+[Unit]
+Description=TeleInfo Reader service
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+Alias=teleinforeader.service
+
+
+[Service]
+Type=idle
+User=jlesauce
+
+# Prevent writes to /usr, /boot, and /etc
+ProtectSystem=full
+
+ExecStart=/home/jlesauce/.local/bin/teleinforeader --log-level warn
+Restart=always
+RestartSec=5s
