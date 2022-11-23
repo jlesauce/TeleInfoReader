@@ -26,11 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install build poetry
 
-      - name: Setup poetry for publish
-        run: |
-          poetry build
-          poetry config repositories.pypi https://pypi.org/legacy/
-
       - name: Publish to pypi.org
         run: |
-          poetry publish -r pypi --no-interaction --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+          poetry build
+          poetry publish --no-interaction --username __token__ --password ${{ secrets.PYPI_TOKEN }}
