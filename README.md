@@ -3,8 +3,8 @@
 Application used to read the user data transmitted by Linky meter system (TeleInfo) from Enedis. The application then
 provides the data using a socket server to connected clients and also publish it to a local database. The application
 runs on a Raspberry Pi Zero and is used only to collect the user data from the meter equipment, the monitoring is done
-with another application which connects to the Raspberry Pi and plot all the gathered information (see TeleInfoMonitor
-application).
+with another application which connects to the Raspberry Pi and plot all the gathered information (see
+[TeleInfoMonitor](https://github.com/jlesauce/TeleInfoMonitor) application).
 
 ## Hardware Description
 

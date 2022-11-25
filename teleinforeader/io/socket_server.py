@@ -51,7 +51,7 @@ class SocketServer:
         logger.info(f'Start listening to socket clients...')
         self._server_socket.listen(self.NUMBER_OF_CONNECTED_CLIENTS_MAX)
 
-        while self.is_server_created() and True:
+        while self.is_server_created():
             client, address = self._server_socket.accept()
             logger.info(f'New client connection from {address}')
             self._connected_clients.append(client)
